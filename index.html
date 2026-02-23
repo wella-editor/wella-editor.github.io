@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2026 학급별 담임</title>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+
+    .updated {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      th, td {
+        padding: 10px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>2026 학급별 담임</h1>
+    <div class="updated" id="updatedTime">불러오는 중...</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>학급</th>
+          <th>담임</th>
+        </tr>
+      </thead>
+      <tbody id="teacherTable">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadTeachers() {
+      try {
+        const response = await fetch('teacher.txt');
+        const text = await response.text();
+
+        const lines = text.trim().split('\n');
+        const tableBody = document.getElementById('teacherTable');
+        tableBody.innerHTML = '';
+
+        lines.forEach(line => {
+          const [className, teacherName] = line.split('|');
+
+          const tr = document.createElement('tr');
+
+          const tdClass = document.createElement('td');
+          tdClass.textContent = className;
+
+          const tdTeacher = document.createElement('td');
+          tdTeacher.textContent = teacherName || '';
+
+          tr.appendChild(tdClass);
+          tr.appendChild(tdTeacher);
+
+          tableBody.appendChild(tr);
+        });
+
+        // 수정 시각 가져오기 (HTTP 헤더 기반)
+        const lastModified = response.headers.get('Last-Modified');
+
+        if (lastModified) {
+          const date = new Date(lastModified);
+
+          const formatted =
+            date.getFullYear() + '.' +
+            String(date.getMonth()+1).padStart(2,'0') + '.' +
+            String(date.getDate()).padStart(2,'0') + ' ' +
+            String(date.getHours()).padStart(2,'0') + ':' +
+            String(date.getMinutes()).padStart(2,'0');
+
+          document.getElementById('updatedTime').textContent =
+            formatted + ' 기준';
+        } else {
+          document.getElementById('updatedTime').textContent =
+            '수정 시각 정보를 가져올 수 없습니다.';
+        }
+
+      } catch (error) {
+        document.getElementById('updatedTime').textContent =
+          '파일을 불러올 수 없습니다.';
+      }
+    }
+
+    loadTeachers();
+  </script>
+
+</body>
+</html>
